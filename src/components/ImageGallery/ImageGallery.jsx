@@ -1,14 +1,14 @@
 import ImageCard from '../ImageCard/ImageCard';
+import css from './ImageGallery.module.css';
 
 export default function ImageGallery({ data, onClick }) {
   const handleClick = evt => {
-    console.dir(evt.target.id);
     onClick(evt.target.id);
   };
   return (
-    <ul>
+    <ul className={css.gallery}>
       {data.map(item => (
-        <li key={item.id} onClick={handleClick}>
+        <li className={css.item} key={item.id} onClick={handleClick}>
           <ImageCard
             src={item.urls.small}
             alt={item.alt_description}

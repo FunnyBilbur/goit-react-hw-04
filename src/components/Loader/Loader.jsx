@@ -9,6 +9,7 @@ export default function Loader() {
         width="55"
         animationDuration="0.75"
         ariaLabel="rotating-lines-loading"
+        strokeColor="#6488ea"
       />
     </div>
   );

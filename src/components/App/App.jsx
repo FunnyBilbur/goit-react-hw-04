@@ -1,18 +1,21 @@
-import { useRef, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import ImageGallery from '../ImageGallery/ImageGallery';
 import SearchBar from '../SearchBar/SearchBar';
 import toast, { Toaster } from 'react-hot-toast';
 import { searchImages, searchImg } from '../api';
-import Modal from 'react-modal';
 import ErrorMessage from '../ErrorMessage/ErrorMessage';
 import Loader from '../Loader/Loader';
 import LoadMoreBtn from '../LoadMoreBtn/LoadMoreBtn';
+import './App.css';
+import ImageModal from '../ImageModal/ImageModal';
 
 export default function App() {
-  // let subtitle;
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchId, setSearchId] = useState('');
   const [gallery, setGallery] = useState([]);
+  const [selectedImage, setSelectedImage] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isModalLoading, setIsModalLoading] = useState(false);
   const [error, setError] = useState(false);
   const [loadMore, setLoadMore] = useState(false);
   const [modalIsOpen, setModalIsOpen] = useState(false);
@@ -30,7 +33,7 @@ export default function App() {
           return [...prevImages, ...data];
         });
         data.length != 0
-          ? toast.success('HTTP success!!!! 🐷 ✅ 🎉') && setLoadMore(true)
+          ? toast.success('Success') && setLoadMore(true)
           : toast.error('No results') && setLoadMore(false);
       } catch (error) {
         setError(true);
@@ -40,6 +43,26 @@ export default function App() {
     }
     getData();
   }, [page, searchQuery]);
+
+  useEffect(() => {
+    if (searchId === '') {
+      return;
+    }
+    async function getData() {
+      try {
+        setIsModalLoading(true);
+        setError(false);
+        const data = await searchImg(searchId);
+        setSelectedImage(data);
+      } catch (error) {
+        setError(true);
+      } finally {
+        setSearchId('');
+        setIsModalLoading(false);
+      }
+    }
+    getData();
+  }, [searchId]);
 
   const handleSubmit = newQuery => {
     setSearchQuery(newQuery);
@@ -52,27 +75,12 @@ export default function App() {
   };
 
   const openModal = id => {
+    setSelectedImage([]);
     setModalIsOpen(true);
-    searchImg(id);
+    setSearchId(id);
   };
   const closeModal = () => {
     setModalIsOpen(false);
-  };
-
-  // const afterOpenModal = () => {
-  //   subtitle.style.color = '#00B200';
-  // };
-  // Modal.setAppElement(App);
-  Modal.setAppElement('#root');
-  const customStyles = {
-    content: {
-      top: '50%',
-      left: '50%',
-      right: 'auto',
-      bottom: 'auto',
-      marginRight: '-50%',
-      transform: 'translate(-50%, -50%)',
-    },
   };
 
   return (
@@ -83,15 +91,14 @@ export default function App() {
       <Toaster />
       {isLoading && <Loader />}
       {loadMore && <LoadMoreBtn onClick={handleLoadMore} />}
-      {/* <button onClick={openModal}>Open Modal</button> */}
-      <Modal
-        isOpen={modalIsOpen}
-        onRequestClose={closeModal}
-        style={customStyles}
-        contentLabel="Example Modal"
-      >
-        <button onClick={closeModal}>close</button>
-      </Modal>
+      {modalIsOpen && (
+        <ImageModal
+          modalIsOpen={modalIsOpen}
+          closeModal={closeModal}
+          selectedImage={selectedImage}
+          isModalLoading={isModalLoading}
+        />
+      )}
     </div>
   );
 }
