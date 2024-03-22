@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import ImageGallery from '../ImageGallery/ImageGallery';
 import SearchBar from '../SearchBar/SearchBar';
 import toast, { Toaster } from 'react-hot-toast';
-import { searchImages, searchImg } from '../api';
+import { searchImages } from '../api';
 import ErrorMessage from '../ErrorMessage/ErrorMessage';
 import Loader from '../Loader/Loader';
 import LoadMoreBtn from '../LoadMoreBtn/LoadMoreBtn';
@@ -39,6 +39,7 @@ export default function App() {
         setError(true);
       } finally {
         setIsLoading(false);
+        setSearchId('');
       }
     }
     getData();
@@ -48,20 +49,20 @@ export default function App() {
     if (searchId === '') {
       return;
     }
-    async function getData() {
-      try {
-        setIsModalLoading(true);
-        setError(false);
-        const data = await searchImg(searchId);
-        setSelectedImage(data);
-      } catch (error) {
-        setError(true);
-      } finally {
-        setSearchId('');
-        setIsModalLoading(false);
-      }
+    try {
+      setIsModalLoading(true);
+      setError(false);
+      gallery.map(item => {
+        if (item.id === searchId) {
+          setSelectedImage(item);
+        }
+      });
+    } catch (error) {
+      setError(true);
+    } finally {
+      setSearchId('');
+      setIsModalLoading(false);
     }
-    getData();
   }, [searchId]);
 
   const handleSubmit = newQuery => {
